@@ -1,7 +1,8 @@
+
 import { getToken } from "next-auth/jwt";
 import { NextResponse } from "next/server";
 
-export async function middleware(req) {
+export async function proxy(req) {
   const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
   const { pathname } = req.nextUrl;
 
@@ -13,6 +14,8 @@ export async function middleware(req) {
   }
   return NextResponse.next();
 }
+
+
 
 export const config = {
   matcher: ["/booking/:path*", "/my-bookings"],

@@ -1,4 +1,4 @@
-const { MongoClient, ServerApiVersion } = require("mongodb");
+import { MongoClient, ServerApiVersion } from "mongodb";
 
 const uri = process.env.MONGODB_URI;
 const dbname = "care_xyz";
@@ -8,6 +8,13 @@ export const collections = {
   USERS: "users",
   BOOKINGS: "bookings",
 };
+
+// Check if URI exists 
+if (!uri) {
+  throw new Error(
+    "Please define the MONGODB_URI environment variable in .env.local"
+  );
+}
 
 const client = new MongoClient(uri, {
   serverApi: {
