@@ -1,36 +1,156 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Care.xyz 🏥👶👵  
+### Baby Sitting & Elderly Care Service Platform
 
-## Getting Started
+🔗 **Live Site:** https://care-xyz-five.vercel.app  
+📦 **GitHub Repository:** https://github.com/mdfardous98/care-xyz  
 
-First, run the development server:
+---
 
-```bash
+## 📌 Project Overview
+
+**Care.xyz** is a web-based caregiving platform designed to provide **reliable, secure, and trusted care services** for children, elderly people, and sick family members.  
+Users can easily find, book, and manage caregiving services such as **Baby Care**, **Elderly Care**, and **Sick People Care** based on their preferred **time duration and location**.
+
+The main goal of this project is to make **caregiving easy, safe, and accessible for everyone**.
+
+---
+
+## 🎯 Project Purpose
+
+- Help families book trusted caregivers
+- Provide a smooth and secure booking experience
+- Offer transparent cost calculation
+- Enable users to track their bookings and statuses
+
+---
+
+## 🚀 Key Features
+
+### ✅ General Features
+- Fully **Responsive Design** (Mobile, Tablet & Desktop)
+- Clean and user-friendly UI
+- Error handling with a custom **404 page**
+
+### 🔐 Authentication
+- Email & Password Login
+- Google Social Login
+- Secure private routes
+- Password validation (min 6 characters, uppercase & lowercase)
+- Logged-in users stay authenticated on page reload
+
+### 🧑‍⚕️ Services
+- Baby Care Service
+- Elderly Care Service
+- Sick People Care Service
+- Individual service detail pages
+
+### 📅 Booking System
+- Dynamic booking based on:
+  - Duration (Hours / Days)
+  - Location (Division, District, City, Area, Address)
+- Automatic **Total Cost Calculation**
+- Booking status management:
+  - Pending
+  - Confirmed
+  - Completed
+  - Cancelled
+- Bookings are saved securely for logged-in users
+
+### 📄 My Bookings Page
+- View all booked services
+- See service name, duration, location, cost & status
+- Cancel booking option
+- View booking details
+
+---
+
+## 🧭 Pages & Routes
+
+| Page | Route | Access |
+|-----|------|--------|
+| Home | `/` | Public |
+| Service Details | `/service/[id]` | Public |
+| Booking Page | `/booking/[id]` | Private |
+| Login | `/login` | Public |
+| Register | `/register` | Public |
+| My Bookings | `/my-bookings` | Private |
+| Error Page | `*` | Public |
+
+---
+
+## 🛠️ Technologies Used
+
+### Frontend
+- **Next.js**
+- **React**
+- **Tailwind CSS**
+- **JavaScript (ES6+)**
+
+### Authentication
+- Firebase Authentication
+  - Email & Password
+  - Google Login
+
+### Deployment
+- **Vercel**
+
+---
+
+## 🔐 Environment Variables
+
+All sensitive configuration keys are stored securely using environment variables.
+
+Example:
+```env
+NEXT_PUBLIC_FIREBASE_API_KEY=your_key
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your_domain
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=your_project_id
+⚙️ Installation & Setup (Local)
+bash
+Copy code
+# Clone the repository
+git clone https://github.com/mdfardous98/care-xyz.git
+
+# Navigate to project directory
+cd care-xyz
+
+# Install dependencies
+npm install
+
+# Run development server
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+App will run on:
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+arduino
+Copy code
+http://localhost:3000
+🧩 Challenges Implemented
+Metadata implementation on:
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+Home page
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Service detail pages
 
-## Learn More
+Secure private route handling
 
-To learn more about Next.js, take a look at the following resources:
+Dynamic booking and cost calculation
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Booking persistence per user
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+🔮 Optional Features (Future Scope)
+Stripe Payment Integration
 
-## Deploy on Vercel
+Email invoice after successful booking
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Admin Dashboard
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Payment history tracking
+
+📤 Submission Information
+GitHub Repo: https://github.com/mdfardous98/care-xyz
+
+Live Site: https://care-xyz-five.vercel.app
+
+👨‍💻 Author
+Md. Fardous
+Frontend Developer | Next.js & React
