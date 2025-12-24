@@ -1,21 +1,17 @@
 import Link from "next/link";
+import { getAllServices } from "@/lib/api"; 
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 
-async function getServices() {
-  const res = await fetch(
-    `${
-      process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000"
-    }/api/services`,
-    { cache: "no-store" }
-  );
-  if (!res.ok) throw new Error("Failed to fetch services");
-  return res.json();
-}
+export const metadata = {
+  title: "Professional Care Services | Care.xyz",
+  description: "Browse our range of vetted, professional care solutions.",
+};
 
 export default async function ServicesPage() {
-  const services = await getServices();
+ 
+  const services = await getAllServices();
 
   return (
     <div className="min-h-screen bg-[#fdfcfb] flex flex-col font-sans">

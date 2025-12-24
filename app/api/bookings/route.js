@@ -4,140 +4,83 @@ import { authOptions } from "../auth/[...nextauth]/route";
 import dbConnect from "@/lib/mongoose";
 import Booking from "@/models/Booking";
 import User from "@/models/User";
+import Service from "@/models/Service"; 
 import mongoose from "mongoose";
 import nodemailer from "nodemailer";
 import bcrypt from "bcryptjs";
 
 const transporter = nodemailer.createTransport({
   service: "gmail",
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-  },
+  auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASS },
 });
 
 export async function POST(request) {
   try {
+    await dbConnect();
     const body = await request.json();
-    const {
-      userId,
-      serviceId,
-      date,
-      totalCost,
-      serviceTitle,
-      userEmail,
-      location,
-      rateType,
-    } = body;
+    const { userId, serviceId, date, userEmail, userName, rateType, location } =
+      body;
 
-    if ((!userId && !userEmail) || !serviceId || !totalCost) {
+    // 1. Validation
+    if (!userEmail || !serviceId || !date) {
       return NextResponse.json(
-        {
-          error:
-            "Required fields missing: userId/email, serviceId, and totalCost",
-        },
+        { error: "Missing required fields" },
         { status: 400 }
       );
     }
 
-    await dbConnect();
+    // 2. Price Verification 
+    const service = await Service.findById(serviceId);
+    if (!service)
+      return NextResponse.json({ error: "Service not found" }, { status: 404 });
+    const verifiedTotal = service.price; 
 
-    let dbUserId = userId;
-    const isValidId = mongoose.Types.ObjectId.isValid(userId);
-
-    if (!isValidId) {
-      let user = await User.findOne({ email: userEmail });
+    // 3. User Resolution
+    let dbUserId;
+    if (mongoose.Types.ObjectId.isValid(userId)) {
+      dbUserId = userId;
+    } else {
+      let user = await User.findOne({ email: userEmail.toLowerCase() });
       if (!user) {
         user = await User.create({
-          name: body.userName || "Valued Client",
-          email: userEmail,
-          password: await bcrypt.hash(Math.random().toString(36), 10),
+          name: userName || "Valued Client",
+          email: userEmail.toLowerCase(),
+          password: await bcrypt.hash(Math.random().toString(36), 12),
           role: "user",
         });
       }
       dbUserId = user._id;
     }
 
-    const newBooking = new Booking({
+    // 4. Create Booking
+    const newBooking = await Booking.create({
       user: dbUserId,
-      serviceId: serviceId,
-      serviceTitle: serviceTitle || "Care Service",
+      serviceId,
+      serviceTitle: service.title,
       date: new Date(date),
-      totalCost,
+      totalCost: verifiedTotal,
       rateType: rateType || "hourly",
+      location,
       status: "Pending",
     });
 
-    await newBooking.save();
-
+    // 5. Async Email 
     try {
       await transporter.sendMail({
-        from: `"Care.xyz Team" <${process.env.EMAIL_USER}>`,
+        from: `"Care.xyz" <${process.env.EMAIL_USER}>`,
         to: userEmail,
-        subject: `Booking Confirmed: ${serviceTitle}`,
-        html: `
-                    <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 20px auto; border: 1px solid #f0f0f0; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
-                        <div style="background: #0f172a; color: #ffffff; padding: 40px 20px; text-align: center;">
-                            <div style="font-size: 28px; font-weight: 800; letter-spacing: -1px; margin-bottom: 8px;">Care<span style="color: #fb7185;">.xyz</span></div>
-                            <p style="text-transform: uppercase; letter-spacing: 2px; font-size: 11px; margin: 0; opacity: 0.7;">Official Booking Invoice</p>
-                        </div>
-                        <div style="padding: 40px; background: #ffffff;">
-                            <h2 style="color: #1e293b; margin-top: 0; font-size: 22px;">Hello, ${
-                              body.userName || "Client"
-                            }</h2>
-                            <p style="color: #475569; line-height: 1.6;">Your request for <strong>${serviceTitle}</strong> has been received. Our team is currently reviewing the schedule.</p>
-                            
-                            <div style="margin: 30px 0; padding: 20px; border-radius: 12px; background: #f8fafc; border: 1px solid #e2e8f0;">
-                                <table style="width: 100%; border-collapse: collapse;">
-                                    <tr>
-                                        <td style="padding: 8px 0; color: #64748b; font-size: 14px;">Booking ID</td>
-                                        <td style="padding: 8px 0; text-align: right; font-family: monospace; font-weight: bold; color: #0f172a;">#${newBooking._id
-                                          .toString()
-                                          .slice(-8)
-                                          .toUpperCase()}</td>
-                                    </tr>
-                                    <tr>
-                                        <td style="padding: 8px 0; color: #64748b; font-size: 14px;">Schedule Date</td>
-                                        <td style="padding: 8px 0; text-align: right; font-weight: 600; color: #0f172a;">${new Date(
-                                          date
-                                        ).toLocaleDateString("en-GB", {
-                                          day: "numeric",
-                                          month: "long",
-                                          year: "numeric",
-                                        })}</td>
-                                    </tr>
-                                    <tr>
-                                        <td style="padding: 8px 0; color: #64748b; font-size: 14px;">Billing Basis</td>
-                                        <td style="padding: 8px 0; text-align: right; font-weight: 600; color: #0f172a; text-transform: capitalize;">${
-                                          rateType || "hourly"
-                                        }</td>
-                                    </tr>
-                                    <tr style="border-top: 1px solid #e2e8f0;">
-                                        <td style="padding: 20px 0 0; color: #0f172a; font-weight: 700; font-size: 16px;">Total Amount</td>
-                                        <td style="padding: 20px 0 0; text-align: right; font-size: 24px; font-weight: 800; color: #e11d48;">৳${totalCost}</td>
-                                    </tr>
-                                </table>
-                            </div>
-
-                            <a href="${
-                              process.env.NEXT_PUBLIC_API_URL ||
-                              "http://localhost:3000"
-                            }/my-bookings" 
-                               style="display: block; background: #0f172a; color: #ffffff; text-align: center; padding: 16px; border-radius: 8px; text-decoration: none; font-weight: 600; margin-top: 20px;">
-                               Track Booking Status
-                            </a>
-                        </div>
-                        <div style="background: #f8fafc; padding: 25px; text-align: center; border-top: 1px solid #f1f5f9;">
-                            <p style="margin: 0; font-size: 12px; color: #94a3b8;">
-                                Questions? Contact our support team at support@care.xyz<br>
-                                &copy; ${new Date().getFullYear()} Care.xyz Professional Services.
-                            </p>
-                        </div>
-                    </div>
-                `,
+        subject: `Booking Confirmed: ${service.title}`,
+        html: generateEmailTemplate(
+          userName,
+          service.title,
+          newBooking._id,
+          date,
+          verifiedTotal,
+          rateType
+        ),
       });
-    } catch (e) {
-      console.error("Mail Error:", e.message);
+    } catch (mailError) {
+      console.error("Non-blocking Mail Error:", mailError);
     }
 
     return NextResponse.json(
@@ -146,37 +89,49 @@ export async function POST(request) {
     );
   } catch (error) {
     return NextResponse.json(
-      { error: "Internal Server Error", details: error.message },
+      { error: "Server Error", details: error.message },
       { status: 500 }
     );
   }
 }
 
-export async function GET(request) {
+export async function GET() {
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user)
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     await dbConnect();
+    const user = await User.findOne({ email: session.user.email });
+    if (!user) return NextResponse.json([], { status: 200 });
 
-    let query = {};
-    if (session.user.id) {
-      query.user = session.user.id;
-    } else {
-      const user = await User.findOne({ email: session.user.email });
-      if (!user) return NextResponse.json([], { status: 200 });
-      query.user = user._id;
-    }
-
-    const bookings = await Booking.find(query)
+    const bookings = await Booking.find({ user: user._id })
       .populate("user", "name email")
       .sort({ createdAt: -1 });
+
     return NextResponse.json(bookings);
   } catch (error) {
-    return NextResponse.json(
-      { error: "Fetch failed", details: error.message },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Fetch failed" }, { status: 500 });
   }
+}
+
+
+function generateEmailTemplate(name, title, id, date, cost, rate) {
+  return `
+      <div style="font-family: sans-serif; max-width: 600px; margin: auto; border: 1px solid #eee; padding: 20px;">
+        <h2 style="color: #0f172a;">Booking Received</h2>
+        <p>Hello ${
+          name || "Client"
+        }, your request for <strong>${title}</strong> is being processed.</p>
+        <p><strong>Booking ID:</strong> #${id
+          .toString()
+          .slice(-8)
+          .toUpperCase()}</p>
+        <p><strong>Date:</strong> ${new Date(date).toDateString()}</p>
+        <p><strong>Total:</strong> ৳${cost}</p>
+        <a href="${
+          process.env.NEXT_PUBLIC_API_URL
+        }/my-bookings" style="background: #0f172a; color: white; padding: 10px 20px; text-decoration: none; display: inline-block; border-radius: 5px;">View Status</a>
+      </div>
+    `;
 }

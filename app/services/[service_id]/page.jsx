@@ -11,34 +11,24 @@ import {
   Heart,
 } from "lucide-react";
 import { getServerSession } from "next-auth";
-import { authOptions } from "../../api/auth/[...nextauth]/route";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import PricingCard from "@/components/PricingCard";
-
-async function getService(id) {
-  try {
-    const res = await fetch(
-      `${
-        process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000"
-      }/api/services/${id}`,
-      { cache: "no-store" }
-    );
-    if (!res.ok) return null;
-    return res.json();
-  } catch (error) {
-    return null;
-  }
-}
+import { getServiceById } from "@/lib/api"; 
 
 // Dynamic Metadata
 export async function generateMetadata({ params }) {
   const { service_id } = await params;
-  const service = await getService(service_id);
-  return { title: service?.title || "Service Details" };
+  const service = await getServiceById(service_id);
+  return {
+    title: service?.title ? `${service.title} | Care.xyz` : "Service Details",
+  };
 }
 
 export default async function ServiceDetailPage({ params }) {
   const { service_id } = await params;
-  const service = await getService(service_id);
+
+  
+  const service = await getServiceById(service_id);
   const session = await getServerSession(authOptions);
 
   if (!service) notFound();
@@ -48,7 +38,6 @@ export default async function ServiceDetailPage({ params }) {
       <Navbar />
 
       <main className="flex-grow max-w-6xl mx-auto px-6 lg:px-8 py-12 w-full">
-        {/* Navigation */}
         <Link
           href="/services"
           className="inline-flex items-center text-stone-500 hover:text-stone-900 mb-8 transition-all group"
@@ -62,7 +51,6 @@ export default async function ServiceDetailPage({ params }) {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
           {/* Left Column: Content */}
           <div className="lg:col-span-8 space-y-12">
-            {/* Hero Image & Identity */}
             <section className="space-y-6">
               <div className="aspect-[16/9] w-full rounded-[2.5rem] overflow-hidden shadow-2xl shadow-stone-200 relative">
                 <img
@@ -81,13 +69,12 @@ export default async function ServiceDetailPage({ params }) {
                 <h1 className="text-4xl md:text-5xl font-bold text-stone-900 tracking-tight leading-tight">
                   {service.title}
                 </h1>
-                <p className="text-2xl text-stone-400 mt-2 font-medium font-bengali">
+                <p className="text-2xl text-stone-400 mt-2 font-medium">
                   {service.titleBn}
                 </p>
               </div>
             </section>
 
-            {/* About Section */}
             <section className="bg-white rounded-[2rem] p-8 md:p-10 border border-stone-100 shadow-sm">
               <h2 className="text-xl font-bold text-stone-900 mb-6 flex items-center gap-2">
                 <Heart className="w-5 h-5 text-rose-500" />
@@ -95,13 +82,12 @@ export default async function ServiceDetailPage({ params }) {
               </h2>
               <div className="space-y-6 text-stone-600 leading-relaxed text-lg">
                 <p>{service.description}</p>
-                <p className="font-bengali text-stone-500 italic bg-stone-50 p-6 rounded-2xl border-l-4 border-stone-200">
+                <p className="text-stone-500 italic bg-stone-50 p-6 rounded-2xl border-l-4 border-stone-200">
                   {service.descriptionBn}
                 </p>
               </div>
             </section>
 
-            {/* Features Grid */}
             <section>
               <h2 className="text-xl font-bold text-stone-900 mb-8">
                 What is Included
@@ -110,7 +96,7 @@ export default async function ServiceDetailPage({ params }) {
                 {service.features?.map((feature, idx) => (
                   <div
                     key={idx}
-                    className="flex items-center p-4 bg-white rounded-2xl border border-stone-50 shadow-sm transition-hover hover:border-stone-200"
+                    className="flex items-center p-4 bg-white rounded-2xl border border-stone-50 shadow-sm hover:border-stone-200 transition-all"
                   >
                     <div className="w-10 h-10 rounded-xl bg-stone-900 flex items-center justify-center mr-4 shrink-0">
                       <CheckCircle className="w-5 h-5 text-white" />
@@ -120,9 +106,7 @@ export default async function ServiceDetailPage({ params }) {
                         {typeof feature === "string" ? feature : feature.en}
                       </p>
                       {feature.bn && (
-                        <p className="text-stone-400 text-xs font-bengali">
-                          {feature.bn}
-                        </p>
+                        <p className="text-stone-400 text-xs">{feature.bn}</p>
                       )}
                     </div>
                   </div>
@@ -130,7 +114,6 @@ export default async function ServiceDetailPage({ params }) {
               </div>
             </section>
 
-            {/* Trust Badges */}
             <div className="grid grid-cols-3 gap-4 py-8 border-t border-stone-100">
               <TrustBadge
                 icon={<ShieldCheck className="w-6 h-6" />}
@@ -147,9 +130,9 @@ export default async function ServiceDetailPage({ params }) {
             </div>
           </div>
 
-          {/* Right Column: Sticky Pricing */}
+          {/* Right Column: Pricing */}
           <aside className="lg:col-span-4 relative">
-            <div className="sticky top-28 transition-transform duration-500">
+            <div className="sticky top-28">
               <PricingCard service={service} session={session} />
             </div>
           </aside>

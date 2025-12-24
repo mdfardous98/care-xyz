@@ -1,17 +1,13 @@
 import Link from "next/link";
+import { getAllServices } from "@/lib/api";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import HeroSection from "@/components/HeroSection";
 import {
   ArrowRight,
-  Star,
   Heart,
-  Shield,
-  Clock,
-  Search,
   UserCheck,
-  Calendar,
-  CheckCircle,
+  Clock,
   Users,
   Activity,
   Baby,
@@ -19,22 +15,7 @@ import {
   MapPin,
 } from "lucide-react";
 
-async function getServices() {
-  try {
-    const res = await fetch(
-      `${
-        process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000"
-      }/api/services`,
-      { cache: "no-store" }
-    );
-    if (!res.ok) return [];
-    const data = await res.json();
-    return data.slice(0, 3);
-  } catch (e) {
-    return [];
-  }
-}
-
+// Helper for UI styling
 function getServiceConfig(category) {
   const configs = {
     Baby: { icon: <Baby />, bg: "bg-rose-50", text: "text-rose-600" },
@@ -51,7 +32,9 @@ function getServiceConfig(category) {
 }
 
 export default async function Home() {
-  const services = await getServices();
+  // Direct DB call - No fetch, No localhost, No Vercel crashes.
+  const allServices = await getAllServices();
+  const featuredServices = allServices.slice(0, 3);
 
   return (
     <div className="min-h-screen bg-[#fdfcfb] font-sans text-stone-900">
@@ -71,7 +54,8 @@ export default async function Home() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
-            {services.map((service) => {
+            {/* FIX: Use featuredServices, not services */}
+            {featuredServices.map((service) => {
               const config = getServiceConfig(service.category);
               return (
                 <div
@@ -117,29 +101,6 @@ export default async function Home() {
               </p>
             </div>
           ))}
-        </div>
-      </section>
-
-      {/* CTA */}
-      <section className="py-24 px-6">
-        <div className="max-w-5xl mx-auto bg-stone-100 rounded-[3rem] p-12 md:p-20 text-center">
-          <h2 className="text-4xl md:text-5xl font-bold mb-8">
-            Ready to find a caregiver?
-          </h2>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link
-              href="/register"
-              className="px-10 py-4 bg-stone-900 text-white font-bold rounded-2xl hover:bg-stone-800 transition-all"
-            >
-              Get Started
-            </Link>
-            <Link
-              href="/services"
-              className="px-10 py-4 bg-white text-stone-900 border border-stone-200 font-bold rounded-2xl hover:bg-stone-50 transition-all"
-            >
-              Browse Services
-            </Link>
-          </div>
         </div>
       </section>
 
