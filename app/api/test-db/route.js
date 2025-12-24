@@ -1,28 +1,32 @@
 import { NextResponse } from "next/server";
-import clientPromise from "@/lib/db";
+import dbConnect from "@/lib/mongoose";
+import mongoose from "mongoose";
+
+export const dynamic = "force-dynamic";
 
 export async function GET() {
-    try {
-        const uri = process.env.MONGODB_URI;
-        const maskedUri = uri ? uri.replace(/:([^:@]+)@/, ':****@') : "UNDEFINED";
+  try {
+    await dbConnect();
 
-        console.log("Test Route - Env URI:", maskedUri);
+    const connectionState = mongoose.connection.readyState;
+    const states = ["disconnected", "connected", "connecting", "disconnecting"];
 
-        const client = await clientPromise;
-        const db = client.db();
-        
-        await db.command({ ping: 1 });
-
-        return NextResponse.json({
-            status: "Connected",
-            uri: maskedUri,
-            message: "Successfully connected to MongoDB"
-        });
-    } catch (error) {
-        return NextResponse.json({
-            status: "Error",
-            error: error.message,
-            stack: error.stack
-        }, { status: 500 });
-    }
+    return NextResponse.json({
+      status: "Success",
+      database: "MongoDB + Mongoose",
+      connection: states[connectionState],
+      host: mongoose.connection.host,
+      timestamp: new Date().toISOString(),
+    });
+  } catch (error) {
+    console.error("Health Check Failed:", error.message);
+    return NextResponse.json(
+      {
+        status: "Error",
+        message: error.message,
+        tip: "Check if MONGODB_URI is added to Vercel Settings and Redeploy.",
+      },
+      { status: 500 }
+    );
+  }
 }

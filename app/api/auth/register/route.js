@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import clientPromise from "@/lib/db";
+import dbConnect from "@/lib/mongoose";
 import bcrypt from "bcryptjs";
 
 export async function POST(req) {

@@ -1,8 +1,7 @@
 import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
-import dbConnect from "@/lib/mongoose";
 import User from "@/models/User";
-
+import dbConnect from "@/lib/mongoose";
 export async function POST(request) {
     try {
         const { name, email, password, nid, contact } = await request.json();
