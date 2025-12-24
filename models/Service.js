@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 
 const ServiceSchema = new mongoose.Schema(
   {
+    _id: { type: String },
     title: { type: String, required: true },
     titleBn: { type: String },
     description: { type: String },
@@ -16,7 +17,7 @@ const ServiceSchema = new mongoose.Schema(
       },
     ],
   },
-  { timestamps: true }
+  { timestamps: true, collection: "services" }
 );
 
 export default mongoose.models.Service ||
