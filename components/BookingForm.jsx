@@ -58,6 +58,7 @@ export default function BookingForm({ service }) {
       serviceId: service._id,
       serviceTitle: service.title,
       userId: session?.user?.id,
+      userEmail: session?.user?.email,
       startDate: formData.startDate,
       location: {
         division: formData.division,
